@@ -242,6 +242,6 @@ def main():
 
 if __name__ == '__main__':
     # Uncomment the next line when running for the first time to add the column
-    add_ok_sign_column()
+    # add_ok_sign_column()
     create_cart_table()  # Create the cart table if it doesn't exist
     main()
