@@ -1,31 +1,46 @@
-#include <SoftwareSerial.h> 
+#include <SoftwareSerial.h>
+#include <LiquidCrystal_I2C.h>
 
-SoftwareSerial bluetoothSerial(10, 11); // RX, TX pins for SoftwareSerial
-int buzzerPin=9;
+// SoftwareSerial bluetoothSerial(10, 11);
+SoftwareSerial bluetoothSerial(10, 11);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+const int buzzer = 7;
+
+void initComponents() {
+  Serial.begin(9600);
+  bluetoothSerial.begin(9600);
+  // bluetoothSerial.begin(9600);
+
+  pinMode(buzzer, OUTPUT);
+
+  lcd.init();
+}
+
+void operateBuzzer() {
+  tone(buzzer, 1000);
+  delay(1000);
+  noTone(buzzer);
+  delay(1000);
+}
+
 void setup() {
-    Serial.begin(9600); // Serial monitor for debugging
-    pinMode(buzzerPin,OUTPUT);
-    bluetoothSerial.begin(9600); // Bluetooth serial connection
+  initComponents();
 }
 
 void loop() {
-    // Read data from Bluetooth module (slave module)
-    if (bluetoothSerial.available()) {
-        String receivedData = bluetoothSerial.readString(); // Read the data received from Bluetooth module
-        Serial.println("Received data from slave: " + receivedData); // Print received data to serial monitor (for debugging)
-        digitalWrite(buzzerPin,HIGH);
-        delay(200);
-        digitalWrite(buzzerPin,LOW);
-        // Example: Send received data back to slave HC-05 module
-        bluetoothSerial.write(receivedData.c_str()); // Uncomment to send data back to slave
-    }
+  if (bluetoothSerial.available()) {
+    String bluetoothData = bluetoothSerial.readString();
+    Serial.print(bluetoothData);
+    lcd.print("Purchase success!");
+    operateBuzzer();
 
-    // Read data from Serial monitor (connected to your computer running Python script)
-    if (Serial.available()) {
-        String sendData = Serial.readString(); // Read the data from Serial monitor
-        bluetoothSerial.write(sendData.c_str()); // Send data received from Serial monitor over Bluetooth to slave HC-05 module
-        
-        // Print the sent data to serial monitor (for debugging)
-        Serial.println("Sent data to slave: " + sendData);
-    }
+    lcd.clear();
+    lcd.backlight();
+    lcd.setCursor(1, 0);
+  }
+  if (Serial.available()) {
+    String serialData = Serial.readString();
+    bluetoothSerial.write(serialData.c_str());
+  }
 }
