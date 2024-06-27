@@ -1,7 +1,7 @@
-#include <SoftwareSerial.h>
+#include <SoftwareSerial.h> 
 
 SoftwareSerial bluetoothSerial(10, 11); // RX, TX pins for SoftwareSerial
-int buzzerPin = 7;
+int buzzerPin=9;
 void setup() {
     Serial.begin(9600); // Serial monitor for debugging
     pinMode(buzzerPin,OUTPUT);
@@ -24,9 +24,7 @@ void loop() {
     if (Serial.available()) {
         String sendData = Serial.readString(); // Read the data from Serial monitor
         bluetoothSerial.write(sendData.c_str()); // Send data received from Serial monitor over Bluetooth to slave HC-05 module
-        digitalWrite(buzzerPin,HIGH);
-        delay(200);
-        digitalWrite(buzzerPin,LOW);
+        
         // Print the sent data to serial monitor (for debugging)
         Serial.println("Sent data to slave: " + sendData);
     }
