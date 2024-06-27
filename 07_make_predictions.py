@@ -3,6 +3,7 @@ import numpy as np
 import mediapipe as mp
 import sqlite3
 import serial
+import time
 
 # Load the face detection model
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -10,6 +11,9 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 # Load the sunglasses images
 sunglasses_male = cv2.imread('images/sunglasses-black.png', cv2.IMREAD_UNCHANGED)
 sunglasses_female = cv2.imread('images/sunglasses-kitty-02.png', cv2.IMREAD_UNCHANGED)
+
+male = ["images/sunglasses-black.png"]
+female = ["images/sunglasses-kitty-01.png", "images/sunglasses-kitty-02.png"]
 
 # Load the gender detection model
 genderProto = "models/gender_deploy.prototxt"
@@ -134,9 +138,10 @@ def main():
     hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.5)
     
     ok_sign_count = 0
+    last_ok_sign_time = 0  # Initialize time tracking for OK sign detection
 
     # Initialize serial communication
-    ser = serial.Serial('COM12', 9600)  # Replace 'COM12' with your actual serial port
+    # ser = serial.Serial('COM12', 9600)  # Replace 'COM12' with your actual serial port
     
     while True:
         ret, frame = cam.read()
@@ -172,10 +177,10 @@ def main():
             # Choose the sunglasses based on gender
             if gender == "Male":
                 sunglasses = sunglasses_male
-                sunglasses_name = 'Black Sunglasses'
+                sunglasses_name = 'Dark Sunglasses'
             else:
                 sunglasses = sunglasses_female
-                sunglasses_name = 'Kitty Sunglasses'
+                sunglasses_name = 'Princess Sunglasses'
 
             # Calculate the position and size of the sunglasses
             sunglasses_width = int(sunglasses_scale * w)
@@ -209,7 +214,9 @@ def main():
         
         ok_sign_detected = detect_ok_sign(rgb_frame, results.multi_hand_landmarks)
         
-        if ok_sign_detected:
+        current_time = time.time()
+        if ok_sign_detected and (current_time - last_ok_sign_time >= 3):
+            last_ok_sign_time = current_time  # Update last OK sign detection time
             cv2.putText(frame, "OK Sign Detected", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
             if conf >= 45:
                 update_ok_sign_detected(id_, 1)
@@ -222,7 +229,8 @@ def main():
                     cart_details += f"{item_name}: {item_count}\n"
 
                 # Send cart details via Serial
-                ser.write(cart_details.encode())
+                # ser.write(cart_details.encode())
+                print(cart_details.encode())
                 print("Data sent successfully via Serial")
         
         if results.multi_hand_landmarks:
