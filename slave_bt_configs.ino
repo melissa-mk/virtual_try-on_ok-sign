@@ -1,7 +1,6 @@
 #include <SoftwareSerial.h>
 #include <LiquidCrystal_I2C.h>
 
-// SoftwareSerial bluetoothSerial(10, 11);
 SoftwareSerial bluetoothSerial(10, 11);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
